@@ -1,0 +1,18 @@
+# .NET
+src/api/**/bin/
+src/api/**/obj/
+
+# Dados persistidos localmente (fora do Docker) — não faz sentido versionar
+# o "banco" de cada um que clonar o repositório.
+src/api/EstanteDigital.Api/Dados/
+
+# Node (o frontend já tem o próprio .gitignore, isto é reforço na raiz)
+**/node_modules/
+**/dist/
+
+# Editor / SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.user

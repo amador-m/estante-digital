@@ -1,0 +1,38 @@
+# CI mínimo: só garante que o backend e o frontend compilam a cada push/PR.
+# NÃO é o "CI/CD completo" citado no README como próximo passo — não faz
+# deploy, não roda testes automatizados (ainda não existem) e não publica
+# nada. É o suficiente pra ter um selinho verde no GitHub, nada mais.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-api:
+    name: Build da API (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet restore src/api/EstanteDigital.sln
+      - run: dotnet build src/api/EstanteDigital.sln --no-restore --configuration Release
+
+  build-frontend:
+    name: Build do frontend (React)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: src/frontend/package-lock.json
+      - run: npm ci
+        working-directory: src/frontend
+      - run: npm run build
+        working-directory: src/frontend

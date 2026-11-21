@@ -1,0 +1,58 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: estante-digital-db
+    environment:
+      POSTGRES_DB: estantedigital
+      POSTGRES_USER: estante
+      POSTGRES_PASSWORD: estante
+    volumes:
+      # Dados do Postgres sobrevivem a um "docker compose down" normal
+      # (sem -v) — só um `down -v` explícito apaga de vez.
+      - estante-db-dados:/var/lib/postgresql/data
+    # A API só deve subir depois que o Postgres estiver aceitando conexões
+    # de verdade, não só com o container "rodando" — senão a primeira
+    # tentativa de conexão da API falha numa subida a frio. pg_isready é o
+    # utilitário oficial do próprio Postgres pra essa checagem.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U estante -d estantedigital"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    container_name: estante-digital-api
+    environment:
+      # Nome do serviço Docker ("db"), não localhost — dentro da rede do
+      # compose, containers se enxergam pelo nome do serviço.
+      ConnectionStrings__Postgres: "Host=db;Port=5432;Database=estantedigital;Username=estante;Password=estante"
+    ports:
+      - "5230:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        # Quem chama a API é o navegador rodando no seu PC, então isto
+        # aponta para a porta que a API publica no HOST (5230 acima), não
+        # para o nome do serviço Docker — ver comentário no Dockerfile do
+        # frontend para o porquê.
+        VITE_API_URL: http://localhost:5230/api
+    container_name: estante-digital-frontend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  estante-db-dados:

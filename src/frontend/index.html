@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estante Digital</title>
+    <script>
+      // Decide o tema ANTES do React montar (e antes até do CSS pintar a
+      // tela), pra não ter aquele "flash" de tela clara por meio segundo
+      // toda vez que alguém que escolheu o escuro recarrega a página.
+      // Por isso isto é um <script> cru no HTML, não um useEffect do React.
+      (function () {
+        var salvo = null;
+        try {
+          salvo = localStorage.getItem("estante-tema");
+        } catch (e) {
+          /* localStorage pode falhar (modo privado); segue com o padrão do sistema */
+        }
+        var tema =
+          salvo || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "escuro" : "claro");
+        document.documentElement.setAttribute("data-tema", tema);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

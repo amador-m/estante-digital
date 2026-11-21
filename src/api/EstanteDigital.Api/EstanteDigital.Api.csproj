@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EstanteDigital.Domain\EstanteDigital.Domain.csproj" />
+    <ProjectReference Include="..\EstanteDigital.Application\EstanteDigital.Application.csproj" />
+    <ProjectReference Include="..\EstanteDigital.Infrastructure\EstanteDigital.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- Mesma trava condicional do EstanteDigital.Infrastructure.csproj (ver
+       comentário lá) — precisa existir aqui também porque é em
+       EstanteDigital.Api/Program.cs que o bloco `#if USAR_POSTGRES` troca
+       o cadastro de serviços de JSON para EF Core + Postgres. -->
+  <PropertyGroup>
+    <UsarPostgres Condition="'$(UsarPostgres)' == ''">false</UsarPostgres>
+    <DefineConstants Condition="'$(UsarPostgres)' == 'true'">$(DefineConstants);USAR_POSTGRES</DefineConstants>
+  </PropertyGroup>
+
+</Project>

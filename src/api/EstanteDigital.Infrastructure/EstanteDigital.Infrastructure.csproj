@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EstanteDigital.Domain\EstanteDigital.Domain.csproj" />
+    <ProjectReference Include="..\EstanteDigital.Application\EstanteDigital.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!--
+    Referência de framework (não é pacote NuGet — é resolvida localmente a
+    partir do SDK) para o Infrastructure poder implementar o
+    AuthenticationHandler do ASP.NET Core e usar Microsoft.Extensions.*
+    sem precisar que Domain/Application conheçam o ASP.NET Core.
+  -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!--
+    Fase 2 (persistência real com PostgreSQL): esta propriedade só existe
+    por causa de uma limitação do MEU ambiente de desenvolvimento, não é um
+    "padrão recomendado" de arquitetura — o sandbox onde escrevi e testei
+    este projeto bloqueia o download de pacotes do NuGet (o mesmo motivo
+    que já impedia o `docker compose build` de puxar imagens; ver
+    LEIA-ME_Aula20.md, seção Fase 2). Sem essa trava eu simplesmente
+    referenciaria o Npgsql.EntityFrameworkCore.PostgreSQL direto, sem
+    `Condition` nenhum.
+
+    Por padrão (UsarPostgres=false), o pacote do EF Core/Npgsql NEM é
+    referenciado e os arquivos em Persistencia/Ef/ ficam de fora da
+    compilação (eles mesmos são protegidos por `#if USAR_POSTGRES`) — é
+    isso que me permite continuar rodando `dotnet build`/`dotnet run` e
+    testando o projeto inteiro de ponta a ponta aqui, usando o repositório
+    em arquivo JSON.
+
+    O Dockerfile da API passa `-p:UsarPostgres=true` no restore/publish —
+    é lá, no seu ambiente com acesso real ao NuGet, que esta parte é
+    compilada e testada de verdade pela primeira vez.
+  -->
+  <PropertyGroup>
+    <UsarPostgres Condition="'$(UsarPostgres)' == ''">false</UsarPostgres>
+    <DefineConstants Condition="'$(UsarPostgres)' == 'true'">$(DefineConstants);USAR_POSTGRES</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UsarPostgres)' == 'true'">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UsarPostgres)' != 'true'">
+    <Compile Remove="Persistencia/Ef/**/*.cs" />
+  </ItemGroup>
+
+</Project>
