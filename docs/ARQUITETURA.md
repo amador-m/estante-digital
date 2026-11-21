@@ -1,6 +1,4 @@
-# Arquitetura — Estante Digital
-
-Resumo pensado pro "Pitch Técnico" (Aula 20): o que foi construído, e por quê, sem enrolação — pra você conseguir explicar isso em 2-3 frases numa entrevista ou numa demonstração.
+# Arquitetura - Estante Digital
 
 ## Visão geral
 
@@ -29,7 +27,7 @@ EstanteDigital.Infrastructure ──┐
 EstanteDigital.Application ──▶ EstanteDigital.Domain
 ```
 
-A seta sempre aponta **para dentro** — ninguém depende de quem está mais externo. `Domain` não conhece nenhuma das outras três; é só `class Livro { ... }` e as *interfaces* (`ILivroRepository`) que as camadas de fora implementam. Essa inversão é o motivo de existir Clean Architecture: o "Livro" e as regras de negócio sobre ele não mudam se amanhã você trocar o arquivo JSON por PostgreSQL, ou o ASP.NET Core por outra coisa — só a `Infrastructure` muda.
+A seta sempre aponta **para dentro**, ninguém depende de quem está mais externo. `Domain` não conhece nenhuma das outras três; é só `class Livro { ... }` e as *interfaces* (`ILivroRepository`) que as camadas de fora implementam. Essa inversão é o motivo de existir Clean Architecture: o "Livro" e as regras de negócio sobre ele não mudam se amanhã você trocar o arquivo JSON por PostgreSQL, ou o ASP.NET Core por outra coisa — só a `Infrastructure` muda.
 
 - **`Domain`** — `Livro` e `Usuario` (entidades — todo `Livro` carrega um `UsuarioId`, o dono da estante), `Seguidor` (relação de "seguir" entre duas contas, uma via só — não é amizade mútua), `GeneroLivro`/`StatusLeitura` (enums), `ILivroRepository`/`IUsuarioRepository`/`ISeguidorRepository` (contratos, sem implementação). Não referencia nenhum outro projeto.
 - **`Application`** — DTOs (o que entra e sai da API), `LivroService` (as regras: validação de título/autor/ano/sinopse, regra "só avalia quem já foi lido", filtros do catálogo, agregação do dashboard — tudo já recebendo o `usuarioId` de quem está logado), `PerfilSocialService` (busca de usuários, seguir/deixar de seguir, montagem do perfil público com a regra de visibilidade em duas camadas — ver `LEIA-ME_Aula20.md`, seção Fase 3), interfaces de serviço (`ILivroService`, `IAuthService`, `IPerfilSocialService`). Depende só de `Domain`.
