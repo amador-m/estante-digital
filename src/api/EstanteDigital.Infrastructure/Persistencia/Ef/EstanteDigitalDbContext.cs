@@ -11,7 +11,7 @@ namespace EstanteDigital.Infrastructure.Persistencia.Ef;
 /// persistência "de verdade" que você pediu (banco relacional) sem quebrar
 /// o build do projeto inteiro no meu ambiente de trabalho, onde os pacotes
 /// do EF Core/Npgsql não podem ser baixados do NuGet (mesmo bloqueio que já
-/// afetava o Docker — ver LEIA-ME_Aula20.md, seção Fase 2). Em compensação:
+/// afetava o Docker, ver docs/ARQUITETURA.md). Em compensação:
 /// eu não consegui compilar nem rodar esta classe especificamente — só a
 /// escrevi com cuidado, seguindo o jeito padrão do EF Core. É a parte que
 /// peço pra você validar rodando o `docker compose up --build`.
@@ -25,6 +25,10 @@ public class EstanteDigitalDbContext : DbContext
     public DbSet<Livro> Livros => Set<Livro>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Seguidor> Seguidores => Set<Seguidor>();
+    public DbSet<Desafio> Desafios => Set<Desafio>();
+    public DbSet<ParticipacaoDesafio> ParticipacoesDesafio => Set<ParticipacaoDesafio>();
+    public DbSet<CheckInLeitura> CheckInsLeitura => Set<CheckInLeitura>();
+    public DbSet<Atividade> Atividades => Set<Atividade>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +101,76 @@ public class EstanteDigitalDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(s => s.SeguidoId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // --- Fase 4: desafios em grupo, streak e feed de atividade ---
+
+        modelBuilder.Entity<Desafio>(desafio =>
+        {
+            desafio.ToTable("desafios");
+            desafio.HasKey(d => d.Id);
+            desafio.Property(d => d.Titulo).IsRequired().HasMaxLength(100);
+            desafio.Property(d => d.Descricao).HasMaxLength(1000);
+
+            // Restrict, não Cascade: apagar a conta de quem criou um
+            // desafio não deveria apagar o desafio em si (outras pessoas
+            // podem estar participando) — mesma lógica do SeguidoId acima.
+            desafio.HasOne<Usuario>()
+                .WithMany()
+                .HasForeignKey(d => d.CriadorId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ParticipacaoDesafio>(participacao =>
+        {
+            participacao.ToTable("participacoes_desafio");
+            participacao.HasKey(p => p.Id);
+
+            // Único (DesafioId, UsuarioId): não dá pra entrar duas vezes no
+            // mesmo desafio — mesma ideia do índice único de Seguidor.
+            participacao.HasIndex(p => new { p.DesafioId, p.UsuarioId }).IsUnique();
+
+            participacao.HasOne<Desafio>()
+                .WithMany()
+                .HasForeignKey(p => p.DesafioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            participacao.HasOne<Usuario>()
+                .WithMany()
+                .HasForeignKey(p => p.UsuarioId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<CheckInLeitura>(checkIn =>
+        {
+            checkIn.ToTable("checkins_leitura");
+            checkIn.HasKey(c => c.Id);
+
+            // Único (UsuarioId, Data): só um check-in por pessoa por dia —
+            // o banco garante a mesma idempotência que o StreakService já
+            // checa na camada de aplicação.
+            checkIn.HasIndex(c => new { c.UsuarioId, c.Data }).IsUnique();
+
+            checkIn.HasOne<Usuario>()
+                .WithMany()
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Atividade>(atividade =>
+        {
+            atividade.ToTable("atividades");
+            atividade.HasKey(a => a.Id);
+            atividade.Property(a => a.Tipo).HasConversion<string>().HasMaxLength(30);
+
+            // Índice em UsuarioId: o feed sempre consulta "atividades de
+            // uma lista de usuários" (ver AtividadeRepositorioEfCore).
+            atividade.HasIndex(a => a.UsuarioId);
+
+            atividade.HasOne<Usuario>()
+                .WithMany()
+                .HasForeignKey(a => a.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

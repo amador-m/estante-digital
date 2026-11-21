@@ -18,8 +18,7 @@ public record UsuarioPublicoDto(
 /// conta. Identidade e estatísticas são sempre visíveis (servem pra decidir
 /// se vale seguir); <see cref="Estante"/> só vem preenchida quando
 /// <see cref="VoceSegue"/> ou <see cref="EhVoceMesmo"/> forem verdadeiros —
-/// ver decisão de visibilidade no LEIA-ME (Fase 3): seguir dá acesso à
-/// estante inteira, read-only, incluindo resenhas.
+/// seguir dá acesso à estante inteira, read-only, incluindo resenhas.
 /// </summary>
 public record PerfilPublicoDto(
     Guid Id,

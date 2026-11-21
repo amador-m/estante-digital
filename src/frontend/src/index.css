@@ -1293,3 +1293,342 @@ a {
   border-left: 3px solid var(--acento);
   padding-left: 10px;
 }
+
+/* Fase 4 — streak no dashboard, desafios e feed */
+
+.dashboard-streak {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background-color: var(--acento-claro);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 0 0 24px;
+}
+
+.dashboard-streak > div {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.streak-numero {
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-family: var(--fonte-mono);
+  color: var(--acento-escuro);
+}
+
+.streak-rotulo {
+  color: var(--texto-principal);
+  font-size: 0.9rem;
+}
+
+.dashboard-streak button {
+  background-color: var(--acento);
+  color: var(--acento-texto);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dashboard-streak button:hover:not(:disabled) {
+  background-color: var(--acento-escuro);
+}
+
+.dashboard-streak button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* Desafios */
+
+.pagina-desafios-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.pagina-desafios-cabecalho h1 {
+  margin: 0;
+  color: var(--acento-escuro);
+}
+
+.pagina-desafios-cabecalho button {
+  background-color: var(--acento);
+  color: var(--acento-texto);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pagina-desafios-cabecalho button:hover {
+  background-color: var(--acento-escuro);
+}
+
+.cartao-desafio-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background-color: var(--bg-cartao);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+
+.cartao-desafio-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.cartao-desafio-form input,
+.cartao-desafio-form textarea {
+  background-color: var(--bg-input);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: var(--texto-principal);
+  font-family: inherit;
+}
+
+.cartao-desafio-form input:focus,
+.cartao-desafio-form textarea:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-desafio-datas {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.form-desafio-datas label {
+  flex: 1 1 160px;
+}
+
+.cartao-desafio-form button[type="submit"] {
+  align-self: flex-start;
+  background-color: var(--acento);
+  color: var(--acento-texto);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cartao-desafio-form button[type="submit"]:hover:not(:disabled) {
+  background-color: var(--acento-escuro);
+}
+
+.cartao-desafio-form button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lista-desafios {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cartao-desafio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background-color: var(--bg-cartao);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+
+.cartao-desafio-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cartao-desafio-titulo-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cartao-desafio-meta {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+}
+
+/* Botão de participar — par do .btn-cancelar já existente (usado pra
+   "sair"), seguindo a mesma lógica de dois pares de classe explícitos que
+   .btn-editar/.btn-remover já usam, em vez de estilizar o <button> genérico
+   do cartão (isso coincidiria com .btn-cancelar quando a pessoa já
+   participa, por especificidade de CSS). */
+.btn-participar {
+  background-color: var(--acento);
+  color: var(--acento-texto);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-participar:hover:not(:disabled) {
+  background-color: var(--acento-escuro);
+}
+
+.rotulo-status-desafio {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.rotulo-status-desafio.ativo {
+  background-color: var(--cor-lido-bg);
+  color: var(--cor-lido);
+}
+
+.rotulo-status-desafio.encerrado {
+  background-color: var(--cor-querer-ler-bg);
+  color: var(--cor-querer-ler);
+}
+
+/* Detalhe do desafio */
+
+.link-voltar {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.link-voltar:hover {
+  color: var(--acento);
+}
+
+.pagina-desafio-detalhe {
+  max-width: 760px;
+}
+
+.cartao-desafio-detalhe-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.cartao-desafio-detalhe-cabecalho h1 {
+  margin: 0 0 6px;
+  color: var(--acento-escuro);
+}
+
+.cartao-desafio-detalhe-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.placar-desafio {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placar-linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--bg-cartao);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.placar-posicao {
+  width: 28px;
+  font-family: var(--fonte-mono);
+  font-weight: 700;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.placar-nome {
+  flex: 1;
+  font-weight: 600;
+}
+
+.placar-contagem {
+  font-family: var(--fonte-mono);
+  font-weight: 700;
+  color: var(--acento-escuro);
+}
+
+/* Feed */
+
+.pagina-feed h1 {
+  color: var(--acento-escuro);
+}
+
+.lista-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.item-feed {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background-color: var(--bg-cartao);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.item-feed-texto {
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--texto-principal);
+}
+
+.item-feed-texto strong {
+  font-weight: 700;
+}
+
+.item-feed-quando {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.76rem;
+  color: var(--texto-suave);
+}

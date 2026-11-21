@@ -10,18 +10,20 @@ namespace EstanteDigital.Application.Servicos;
 /// <summary>
 /// Onde moram as regras de negócio de verdade. O controller não valida nada
 /// sozinho — só recebe o DTO, chama o Service e devolve o resultado (ou o
-/// erro). Isso é o que o PDF da Aula 20 chama de "Services com regras" no
-/// checklist de code review.
+/// erro). É o que um checklist de code review profissional chama de
+/// "Services com regras".
 /// </summary>
 public class LivroService : ILivroService
 {
     private readonly ILivroRepository _repositorio;
     private readonly IUsuarioRepository _usuarioRepository;
+    private readonly IAtividadeRepository _atividadeRepository;
 
-    public LivroService(ILivroRepository repositorio, IUsuarioRepository usuarioRepository)
+    public LivroService(ILivroRepository repositorio, IUsuarioRepository usuarioRepository, IAtividadeRepository atividadeRepository)
     {
         _repositorio = repositorio;
         _usuarioRepository = usuarioRepository;
+        _atividadeRepository = atividadeRepository;
     }
 
     public async Task<IReadOnlyList<LivroDto>> ListarAsync(Guid usuarioId, string? genero, string? autor, string? status, string? busca)
@@ -91,13 +93,36 @@ public class LivroService : ILivroService
             Resenha = string.IsNullOrWhiteSpace(dto.Resenha) ? null : dto.Resenha.Trim(),
             // Livro já cadastrado direto como "Lido" conta como concluído agora
             // (não há como a pessoa informar uma data de conclusão no passado
-            // nesta versão — ver LEIA-ME, decisão tomada sem perguntar).
+            // nesta versão — decisão tomada sem perguntar, documentada no histórico do projeto).
             DataConclusao = status == StatusLeitura.Lido ? DateTime.UtcNow : null,
             CriadoEm = DateTime.UtcNow,
             AtualizadoEm = DateTime.UtcNow
         };
 
         var criado = await _repositorio.AdicionarAsync(livro);
+
+        // Feed de atividade (Fase 4): um livro já cadastrado como "Lido" ou
+        // com resenha conta como as mesmas atividades que aconteceriam se
+        // isso tivesse sido feito depois, numa edição (ver AtualizarAsync).
+        if (criado.StatusLeitura == StatusLeitura.Lido)
+        {
+            await RegistrarAtividadeAsync(usuarioId, TipoAtividade.TerminouLivro, livroId: criado.Id);
+        }
+
+        if (!string.IsNullOrWhiteSpace(criado.Resenha))
+        {
+            await RegistrarAtividadeAsync(usuarioId, TipoAtividade.ResenhaPublicada, livroId: criado.Id);
+        }
+
+        if (criado.DataConclusao.HasValue)
+        {
+            var anoAtual = criado.DataConclusao.Value.Year;
+            var outrosLivros = await _repositorio.ListarTodosAsync(usuarioId);
+            var totalAntes = outrosLivros.Count(l =>
+                l.Id != criado.Id && l.DataConclusao.HasValue && l.DataConclusao.Value.Year == anoAtual);
+            await RegistrarMetaBatidaSeNecessarioAsync(usuarioId, totalAntes, totalAntes + 1);
+        }
+
         return ParaDto(criado);
     }
 
@@ -117,6 +142,20 @@ public class LivroService : ILivroService
         ValidarResenha(dto.Resenha);
 
         var statusAnterior = existente.StatusLeitura;
+        var resenhaJaExistiaAntes = !string.IsNullOrWhiteSpace(existente.Resenha);
+
+        // "Antes" pro cálculo de meta batida (Fase 4) — pega o retrato da
+        // estante ANTES de tocar em `existente`, pra depois comparar com o
+        // retrato depois de salvar e ver se a pessoa cruzou a meta agora.
+        // Guarda também se ESTE livro específico já contava pro ano atual
+        // (importa pro delta abaixo: um livro concluído num ano anterior
+        // que só agora sai do status "Lido" não deve subtrair da contagem
+        // deste ano, porque nunca entrou nela).
+        var anoAtual = DateTime.UtcNow.Year;
+        var dataConclusaoOriginal = existente.DataConclusao;
+        var contavaNoAnoAtualAntes = dataConclusaoOriginal.HasValue && dataConclusaoOriginal.Value.Year == anoAtual;
+        var livrosDoUsuarioAntes = await _repositorio.ListarTodosAsync(usuarioId);
+        var livrosLidosNoAnoAntes = livrosDoUsuarioAntes.Count(l => l.DataConclusao.HasValue && l.DataConclusao.Value.Year == anoAtual);
 
         existente.Titulo = dto.Titulo.Trim();
         existente.Autor = dto.Autor.Trim();
@@ -136,11 +175,13 @@ public class LivroService : ILivroService
         // primeira vez (preservando a data original se a pessoa só editar
         // outros campos depois, sem mexer no status) e some assim que o
         // status deixa de ser Lido.
+        var terminouAgora = false;
         if (status == StatusLeitura.Lido)
         {
             if (statusAnterior != StatusLeitura.Lido || existente.DataConclusao is null)
             {
                 existente.DataConclusao = DateTime.UtcNow;
+                terminouAgora = true;
             }
         }
         else
@@ -148,8 +189,32 @@ public class LivroService : ILivroService
             existente.DataConclusao = null;
         }
 
+        var resenhaPublicadaAgora = !resenhaJaExistiaAntes && !string.IsNullOrWhiteSpace(existente.Resenha);
+
         var atualizado = await _repositorio.AtualizarAsync(existente);
-        return atualizado is null ? null : ParaDto(atualizado);
+        if (atualizado is null)
+        {
+            return null;
+        }
+
+        // Feed de atividade (Fase 4) — cada `if` aqui é independente: dá
+        // pra, numa mesma edição, terminar um livro E publicar a resenha
+        // dele ao mesmo tempo (duas atividades diferentes no feed).
+        if (terminouAgora)
+        {
+            await RegistrarAtividadeAsync(usuarioId, TipoAtividade.TerminouLivro, livroId: atualizado.Id);
+        }
+
+        if (resenhaPublicadaAgora)
+        {
+            await RegistrarAtividadeAsync(usuarioId, TipoAtividade.ResenhaPublicada, livroId: atualizado.Id);
+        }
+
+        var contaNoAnoAtualDepois = atualizado.DataConclusao.HasValue && atualizado.DataConclusao.Value.Year == anoAtual;
+        var delta = (contaNoAnoAtualDepois ? 1 : 0) - (contavaNoAnoAtualAntes ? 1 : 0);
+        await RegistrarMetaBatidaSeNecessarioAsync(usuarioId, livrosLidosNoAnoAntes, livrosLidosNoAnoAntes + delta);
+
+        return ParaDto(atualizado);
     }
 
     public Task<bool> RemoverAsync(Guid id, Guid usuarioId) => _repositorio.RemoverAsync(id, usuarioId);
@@ -307,6 +372,36 @@ public class LivroService : ILivroService
         if (!string.IsNullOrWhiteSpace(resenha) && resenha.Trim().Length > 4000)
         {
             throw new ValidacaoException("A resenha deve ter no máximo 4000 caracteres.");
+        }
+    }
+
+    private Task RegistrarAtividadeAsync(Guid usuarioId, TipoAtividade tipo, Guid? livroId = null) =>
+        _atividadeRepository.RegistrarAsync(new Atividade
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = usuarioId,
+            Tipo = tipo,
+            LivroId = livroId,
+            CriadoEm = DateTime.UtcNow
+        });
+
+    /// <summary>Loga "meta batida" só na transição — quando `antes` ainda
+    /// não tinha alcançado a meta e `depois` alcançou. Sem essa checagem,
+    /// toda edição de um livro já lido depois de bater a meta geraria uma
+    /// nova atividade repetida no feed (ver MetaLeituraAnual, opcional).</summary>
+    private async Task RegistrarMetaBatidaSeNecessarioAsync(Guid usuarioId, int livrosLidosAntes, int livrosLidosDepois)
+    {
+        var usuario = await _usuarioRepository.BuscarPorIdAsync(usuarioId);
+        if (usuario?.MetaLeituraAnual is int meta && meta > 0 && livrosLidosAntes < meta && livrosLidosDepois >= meta)
+        {
+            await _atividadeRepository.RegistrarAsync(new Atividade
+            {
+                Id = Guid.NewGuid(),
+                UsuarioId = usuarioId,
+                Tipo = TipoAtividade.MetaBatida,
+                MetaValor = meta,
+                CriadoEm = DateTime.UtcNow
+            });
         }
     }
 

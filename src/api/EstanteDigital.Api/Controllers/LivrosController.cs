@@ -8,10 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace EstanteDigital.Api.Controllers;
 
 /// <summary>
-/// Fase 2: todo o controller agora exige login — não existe mais "catálogo
-/// público", porque cada conta tem a própria estante privada (ver
-/// LEIA-ME_Aula20.md, seção Fase 2, para o porquê dessa mudança de modelo).
-/// O id de quem está logado vem da claim NameIdentifier do token (ver
+/// Todo o controller exige login — não existe "catálogo público", porque
+/// cada conta tem a própria estante privada (modelo multi-tenant). O id de
+/// quem está logado vem da claim NameIdentifier do token (ver
 /// BearerAuthenticationHandler) — nunca de um parâmetro vindo do cliente,
 /// então não tem como uma requisição "fingir" ser outro usuário.
 /// </summary>

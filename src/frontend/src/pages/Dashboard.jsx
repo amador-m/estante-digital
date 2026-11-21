@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { obterDashboard } from "../services/livroService";
+import { obterStreak, registrarCheckIn } from "../services/streakService";
 
 function BarraContagem({ chave, quantidade, maximo }) {
   const largura = maximo > 0 ? Math.max(6, Math.round((quantidade / maximo) * 100)) : 0;
@@ -19,11 +20,22 @@ export default function Dashboard() {
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState(null);
 
+  const [streak, setStreak] = useState(null);
+  const [marcandoCheckIn, setMarcandoCheckIn] = useState(false);
+
   useEffect(() => {
     obterDashboard()
       .then(setDados)
       .catch(() => setErro("Não foi possível carregar o dashboard. Verifique se a API está rodando."));
+    obterStreak().then(setStreak);
   }, []);
+
+  function marcarCheckIn() {
+    setMarcandoCheckIn(true);
+    registrarCheckIn()
+      .then(setStreak)
+      .finally(() => setMarcandoCheckIn(false));
+  }
 
   if (erro) return <div className="erro-api">{erro}</div>;
   if (!dados) return <div className="carregando">Carregando</div>;
@@ -57,6 +69,20 @@ export default function Dashboard() {
           <span className="estatistica-rotulo">nota média dos lidos</span>
         </div>
       </div>
+
+      {streak && (
+        <section className="dashboard-streak">
+          <div>
+            <span className="streak-numero">{streak.sequenciaAtual}</span>
+            <span className="streak-rotulo">
+              {streak.sequenciaAtual === 1 ? "dia seguido lendo" : "dias seguidos lendo"}
+            </span>
+          </div>
+          <button type="button" onClick={marcarCheckIn} disabled={streak.jaMarcouHoje || marcandoCheckIn}>
+            {streak.jaMarcouHoje ? "Já marcado hoje" : marcandoCheckIn ? "Marcando..." : "Marquei que li hoje"}
+          </button>
+        </section>
+      )}
 
       {dados.metaLeituraAnual != null && (
         <section className="dashboard-meta-anual">

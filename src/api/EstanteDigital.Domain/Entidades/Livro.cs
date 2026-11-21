@@ -42,7 +42,7 @@ public class Livro
     /// <summary>Resenha em texto livre — diferente da Avaliacao (nota 1-5),
     /// é a parte "social" deste livro: quando a conta segue outra, é isto
     /// (junto com o resto da estante) que fica visível no perfil público
-    /// (ver Fase 3 no LEIA-ME). Pode ser escrita a qualquer momento, não só
+    /// (ver PerfilSocialService). Pode ser escrita a qualquer momento, não só
     /// quando Lido — não há essa trava de propósito, pra não impedir uma
     /// pessoa de ir anotando impressões enquanto ainda está lendo.</summary>
     public string? Resenha { get; set; }

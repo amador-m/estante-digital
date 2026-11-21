@@ -49,6 +49,16 @@ export default function BarraSuperior() {
             Usuários
           </NavLink>
         )}
+        {isAuth && (
+          <NavLink to="/desafios" className={({ isActive }) => (isActive ? "ativo" : "")}>
+            Desafios
+          </NavLink>
+        )}
+        {isAuth && (
+          <NavLink to="/feed" className={({ isActive }) => (isActive ? "ativo" : "")}>
+            Feed
+          </NavLink>
+        )}
       </nav>
 
       <div className="barra-usuario">

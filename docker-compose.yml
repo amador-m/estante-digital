@@ -42,10 +42,10 @@ services:
       context: ./src/frontend
       dockerfile: Dockerfile
       args:
-        # Quem chama a API é o navegador rodando no seu PC, então isto
+        # Quem chama a API é o navegador rodando no PC, então isto
         # aponta para a porta que a API publica no HOST (5230 acima), não
-        # para o nome do serviço Docker — ver comentário no Dockerfile do
-        # frontend para o porquê.
+        # para o nome do serviço Docker; ver comentário no Dockerfile do
+        # frontend para o porquê
         VITE_API_URL: http://localhost:5230/api
     container_name: estante-digital-frontend
     ports:

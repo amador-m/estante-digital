@@ -11,6 +11,9 @@ import Gerenciar from "./pages/Gerenciar";
 import Perfil from "./pages/Perfil";
 import Pessoas from "./pages/Pessoas";
 import PerfilPublico from "./pages/PerfilPublico";
+import Desafios from "./pages/Desafios";
+import DesafioDetalhe from "./pages/DesafioDetalhe";
+import Feed from "./pages/Feed";
 
 function Layout({ children }) {
   return (
@@ -120,6 +123,36 @@ export default function App() {
             <PrivateRoute>
               <Layout>
                 <PerfilPublico />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/desafios"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Desafios />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/desafios/:id"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <DesafioDetalhe />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/feed"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Feed />
               </Layout>
             </PrivateRoute>
           }

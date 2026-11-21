@@ -7,8 +7,8 @@ namespace EstanteDigital.Infrastructure.Persistencia;
 /// Catálogo inicial com livros e autores reais (pesquisados antes de
 /// montar esta lista — título, autor, série e ano conferidos; as sinopses
 /// são redações originais minhas sobre a premissa pública de cada livro,
-/// não trechos copiados de orelha/contracapa). Sobre as mudanças em
-/// relação ao que você pediu, ver LEIA-ME_Aula20.md — resumo rápido:
+/// não trechos copiados de orelha/contracapa). Mudanças feitas em relação
+/// ao pedido original:
 ///
 /// - "Rafael Montes" → corrigido para "Raphael Montes" (grafia real do
 ///   autor de Bom Dia, Verônica / Dias Perfeitos).

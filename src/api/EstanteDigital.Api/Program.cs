@@ -42,7 +42,7 @@ builder.Services.AddSingleton<RefreshTokenStore>();
 // --- Persistência real: PostgreSQL via EF Core ---
 // Só é compilado quando o projeto é construído com `-p:UsarPostgres=true`
 // (o Dockerfile da API faz isso) — ver o comentário no .csproj do
-// Infrastructure e LEIA-ME_Aula20.md (seção Fase 2) para o porquê.
+// Infrastructure e em docs/ARQUITETURA.md para o porquê.
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres ausente em appsettings.json.");
 builder.Services.AddDbContext<EstanteDigitalDbContext>(options => options.UseNpgsql(connectionString));
@@ -50,6 +50,10 @@ builder.Services.AddDbContext<EstanteDigitalDbContext>(options => options.UseNpg
 builder.Services.AddScoped<ILivroRepository, LivroRepositorioEfCore>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepositorioEfCore>();
 builder.Services.AddScoped<ISeguidorRepository, SeguidorRepositorioEfCore>();
+builder.Services.AddScoped<IDesafioRepository, DesafioRepositorioEfCore>();
+builder.Services.AddScoped<IParticipacaoDesafioRepository, ParticipacaoDesafioRepositorioEfCore>();
+builder.Services.AddScoped<ICheckInRepository, CheckInRepositorioEfCore>();
+builder.Services.AddScoped<IAtividadeRepository, AtividadeRepositorioEfCore>();
 // DbContext é Scoped (nunca pode ser Singleton — não é thread-safe), então
 // tudo que depende dele, direta ou indiretamente, também precisa ser
 // Scoped — por isso IAuthService muda de Singleton (variante JSON, abaixo)
@@ -67,6 +71,18 @@ var caminhoArquivoUsuarios = Path.Combine(
 var caminhoArquivoSeguidores = Path.Combine(
     AppContext.BaseDirectory,
     builder.Configuration["Armazenamento:CaminhoArquivoSeguidores"] ?? "Dados/seguidores.json");
+var caminhoArquivoDesafios = Path.Combine(
+    AppContext.BaseDirectory,
+    builder.Configuration["Armazenamento:CaminhoArquivoDesafios"] ?? "Dados/desafios.json");
+var caminhoArquivoParticipacoesDesafio = Path.Combine(
+    AppContext.BaseDirectory,
+    builder.Configuration["Armazenamento:CaminhoArquivoParticipacoesDesafio"] ?? "Dados/participacoes_desafio.json");
+var caminhoArquivoCheckIns = Path.Combine(
+    AppContext.BaseDirectory,
+    builder.Configuration["Armazenamento:CaminhoArquivoCheckIns"] ?? "Dados/checkins_leitura.json");
+var caminhoArquivoAtividades = Path.Combine(
+    AppContext.BaseDirectory,
+    builder.Configuration["Armazenamento:CaminhoArquivoAtividades"] ?? "Dados/atividades.json");
 
 // Todos Singleton (não Scoped): são repositórios baseados em arquivo JSON
 // com sua própria trava (SemaphoreSlim) para serializar escritas
@@ -78,6 +94,14 @@ builder.Services.AddSingleton<IUsuarioRepository>(_ =>
     new UsuarioJsonRepository(caminhoArquivoUsuarios, DadosIniciais.ObterUsuarioDemo()));
 builder.Services.AddSingleton<ISeguidorRepository>(_ =>
     new SeguidorJsonRepository(caminhoArquivoSeguidores));
+builder.Services.AddSingleton<IDesafioRepository>(_ =>
+    new DesafioJsonRepository(caminhoArquivoDesafios));
+builder.Services.AddSingleton<IParticipacaoDesafioRepository>(_ =>
+    new ParticipacaoDesafioJsonRepository(caminhoArquivoParticipacoesDesafio));
+builder.Services.AddSingleton<ICheckInRepository>(_ =>
+    new CheckInJsonRepository(caminhoArquivoCheckIns));
+builder.Services.AddSingleton<IAtividadeRepository>(_ =>
+    new AtividadeJsonRepository(caminhoArquivoAtividades));
 
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<IPerfilService, PerfilService>();
@@ -88,6 +112,9 @@ builder.Services.AddScoped<ILivroService, LivroService>();
 // Scoped (EF Core) quanto dos Singleton (JSON) — Scoped-depender-de-Singleton
 // é sempre uma combinação válida no DI do ASP.NET Core.
 builder.Services.AddScoped<IPerfilSocialService, PerfilSocialService>();
+builder.Services.AddScoped<IDesafioService, DesafioService>();
+builder.Services.AddScoped<IStreakService, StreakService>();
+builder.Services.AddScoped<IFeedService, FeedService>();
 
 builder.Services
     .AddAuthentication("Bearer")
@@ -97,9 +124,9 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 #if USAR_POSTGRES
-// Cria o schema a partir do modelo (sem pasta de Migrations — ver
-// LEIA-ME_Aula20.md, seção Fase 2, sobre por que escolhi EnsureCreated em
-// vez de Migrate/dotnet-ef aqui) e, se o banco ainda estiver vazio, semeia
+// Cria o schema a partir do modelo (sem pasta de Migrations — EnsureCreated
+// em vez de Migrate/dotnet-ef, ver docs/ARQUITETURA.md) e, se o banco ainda
+// estiver vazio, semeia
 // a conta demo + o catálogo de exemplo — assim quem sobe o projeto do zero
 // já consegue logar e ver uma estante preenchida.
 using (var escopoInicial = app.Services.CreateScope())
@@ -123,7 +150,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Health check simples — item citado no fluxo de demonstração da Aula 20.
+// Health check simples, usado na demonstração e pelo healthcheck do Docker.
 app.MapGet("/health", () => Results.Ok(new { status = "ok", timestampUtc = DateTime.UtcNow }))
     .AllowAnonymous();
 

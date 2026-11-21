@@ -81,9 +81,8 @@ public class PerfilSocialService : IPerfilSocialService
         var anoAtual = DateTime.UtcNow.Year;
         var livrosLidosNoAnoAtual = livrosDoAlvo.Count(l => l.DataConclusao.HasValue && l.DataConclusao.Value.Year == anoAtual);
 
-        // A estante só é exposta pra quem segue (ou pro próprio dono) — ver
-        // decisão de visibilidade no LEIA-ME (Fase 3). Pra quem só está
-        // "espiando" antes de decidir seguir, dá pra ver nome/ícone/cor e as
+        // A estante só é exposta pra quem segue (ou pro próprio dono). Pra
+        // quem só está "espiando" antes de decidir seguir, dá pra ver nome/ícone/cor e as
         // estatísticas (quantos livros, meta, seguidores), mas não os
         // livros em si nem as resenhas.
         var estanteVisivel = (ehVoceMesmo || voceSegue)
