@@ -6,25 +6,25 @@ Sistema full stack de gestão de acervo literário - catálogo de livros, dashbo
 
 ## 🖼️ Telas
 
-**Minha Estante** — catálogo pessoal, com busca e filtro por gênero/status (tema claro e tema escuro, cada conta com sua própria cor de destaque):
+**Minha Estante** - catálogo pessoal, com busca e filtro por gênero/status (tema claro e tema escuro, cada conta com sua própria cor de destaque):
 
 | Tema claro | Tema escuro |
 |---|---|
 | ![Minha Estante - tema claro](docs/screenshot-estante.png) | ![Minha Estante - tema escuro](docs/screenshot-estante-escura.png) |
 
-**Visão Geral** e **Ranking de Leituras** — estatísticas da estante e os livros melhor avaliados:
+**Visão Geral** e **Ranking de Leituras** - estatísticas da estante e os livros melhor avaliados:
 
 | Dashboard | Ranking |
 |---|---|
 | ![Dashboard](docs/screenshot-dashboard.png) | ![Ranking de Leituras](docs/screenshot-ranking.png) |
 
-**Gerenciar Livros** — cadastro e edição do acervo (CRUD completo):
+**Gerenciar Livros** - cadastro e edição do acervo (CRUD completo):
 
 | Adicionar livro | Acervo atual |
 |---|---|
 | ![Formulário de adicionar livro](docs/screenshot-gerenciar-form.png) | ![Lista do acervo com editar/excluir](docs/screenshot-gerenciar-lista.png) |
 
-**Perfil e rede social** — personalização de conta, seguir outras pessoas e estante pública:
+**Perfil e rede social** - personalização de conta, seguir outras pessoas e estante pública:
 
 ![Página de perfil - nome de usuário, ícone e cor principal](docs/screenshot-perfil.png)
 
@@ -32,7 +32,7 @@ Sistema full stack de gestão de acervo literário - catálogo de livros, dashbo
 
 ![Perfil público de outra conta, depois de seguir - estante liberada com progresso de leitura e resenha](docs/screenshot-perfil-publico.png)
 
-**Desafios de leitura, streak e feed** (Fase 4) — desafios em grupo com placar, sequência de dias lendo e atividade de quem você segue:
+**Desafios de leitura, streak e feed** (Fase 4) - desafios em grupo com placar, sequência de dias lendo e atividade de quem você segue:
 
 ![Desafios de leitura - lista com status e participantes](docs/screenshot-desafios.png)
 
@@ -79,7 +79,7 @@ Detalhes de cada camada e o porquê da divisão: [`docs/ARQUITETURA.md`](docs/AR
 
 ## 🚀 Execução
 
-### Opção A — Docker (recomendado para avaliar o projeto rápido)
+### Opção A - Docker (recomendado para avaliar o projeto rápido)
 
 ```bash
 docker compose up --build
@@ -89,7 +89,7 @@ docker compose up --build
 - API: http://localhost:5230 (health check em `/health`)
 - Banco: PostgreSQL, container próprio (`db`), dados num volume Docker
 
-### Opção B — Modo desenvolvimento (dois terminais, sem Postgres)
+### Opção B - Modo desenvolvimento (dois terminais, sem Postgres)
 
 ```bash
 # Terminal 1
