@@ -40,6 +40,7 @@ Sistema full stack de gestão de acervo literário - catálogo de livros, dashbo
 
 ![Feed de atividade - livro terminado, resenha nova e streak de quem você segue](docs/screenshot-feed.png)
 
+
 ## 📌 Descrição
 
 A Estante Digital é um catálogo de livros com:
@@ -51,7 +52,9 @@ A Estante Digital é um catálogo de livros com:
 - **Perfil personalizável** - nome de usuário (gerado a partir do e-mail no cadastro, trocável depois), ícone e cor de destaque da interface, escolhidos entre opções fixas; troca de senha.
 - **Resenha, progresso de leitura e meta anual** - resenha em texto por livro, página atual (com barra de progresso), e uma meta de livros lidos no ano corrente, acompanhada no dashboard.
 - **Seguir outras pessoas** - busque por nome de usuário e siga outras contas para ver a estante completa delas (livros, status e resenhas); antes de seguir, só as estatísticas públicas do perfil ficam visíveis.
+<<<<<<< HEAD
 - **Desafios de leitura em grupo, streak e feed de atividade** - crie ou entre em desafios abertos (ex.: "quem lê mais livros até o fim do mês"), com placar sempre recalculado a partir da estante de cada participante; marque manualmente os dias em que leu para acompanhar sua sequência (streak); e veja num feed o que as contas que você segue andam fazendo (livro terminado, resenha nova, meta batida, check-in, desafio concluído) — inspirado no GymRats.
+=======
 
 ## 🛠️ Stack
 
@@ -117,7 +120,10 @@ Já vem com uma estante de 19 livros cadastrados. Ou crie sua própria conta pel
 - Senhas com hash PBKDF2-HMACSHA256 (100.000 iterações, salt aleatório por conta), nunca texto puro
 - Autenticação JWT (assinatura HMAC-SHA256, implementação manual, sem `Microsoft.AspNetCore.Authentication.JwtBearer`)
 - Refresh token com rotação, revogado no logout
+<<<<<<< HEAD
 - Toda rota de `/api/livros` e `/api/dashboard` exige `[Authorize]` e filtra pelo id de quem está logado (uma conta nunca enxerga nem edita livros de outra)
+=======
+- Toda rota de `/api/livros` e `/api/dashboard` exige `[Authorize]` e filtra pelo id de quem está logado (uma conta nunca enxerga nem edita livros de outra_
 - CORS restrito às origens do próprio frontend (dev e Docker)
 
 ## 📈 Próximos passos
